@@ -16,10 +16,10 @@ def create_app(config_key):
 
     from apps.analyze import views as analyze_views
 
-    app.register_blueprint(analyze_views.analyze, url_prefix="/analyze")
+    app.register_blueprint(analyze_views.al, url_prefix="/analyze")
 
-    from apps.data import views as data_views
+    # from apps.data import views as data_views
 
-    app.register_blueprint(data_views.data, url_prefix="/data")
+    # app.register_blueprint(data_views.data, url_prefix="/data")
 
     return app
