@@ -2,23 +2,31 @@
 {% block content %}
 <!-- 画像アップロード画面へのリンクを追加する -->
 <div>
-    <form action="{{ url_for('analyze.upload_image') }}" method="post" enctype="multipart/form-data"
+    <form action="{{ url_for('analyze.index') }}" method="post" enctype="multipart/form-data"
         novalidate="novalidate">
         {{ form.csrf_token }}
         <div>
             <label>
-                <span> {{ form.image(class="form-control-file") }} </span>
+                <!-- <input type="file" name="texts" class="filepond" multiple /> -->
+                {{ form.texts(class="filepond", multiple=True) }}
+                <!-- form-control-file -->
             </label>
         </div>
-        {% for error in form.image.errors %}
+        {% for error in form.texts.errors %}
         <span style="color: red;">{{ error }}</span>
         {% endfor %}
         <hr />
         <div>
-            <label> {{ form.submit(class="btn btn-primary") }} </label>
+            {{ form.submit(class="btn btn-primary") }}
         </div>
     </form>
-</div>
+    
+    <script>
+    FilePond.registerPlugin();
+    FilePond.create(document.querySelector('.filepond'));
+    </script>
+
+
 <!-- 画像一覧を表示する -->
 {% for user_image in user_images %}
 <div class="card col-md-7 dt-image-content">
