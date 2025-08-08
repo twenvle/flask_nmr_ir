@@ -8,7 +8,7 @@ class BaseConfig:
     WTF_CSRF_SECRET_KEY = "aiueo"  # CSRF対策のためのセキュリティキー
     UPLOAD_FOLDER = str(
         Path(basedir, "apps", "past_data")
-    )  # 画像アップロード先のフォルダ
+    )  # テキストアップロード先のフォルダ
 
 
 class LocalConfig(BaseConfig):

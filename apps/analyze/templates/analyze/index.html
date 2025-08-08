@@ -6,36 +6,30 @@
         novalidate="novalidate">
         {{ form.csrf_token }}
         <div>
-            <label>
-                <!-- <input type="file" name="texts" class="filepond" multiple /> -->
-                {{ form.texts(class="filepond", multiple=True) }}
-                <!-- form-control-file -->
-            </label>
+            {{ form.texts(class="filepond", multiple=True) }}
+            <!-- <input type="file" class="filepond" name="texts" multiple> -->
         </div>
+
         {% for error in form.texts.errors %}
         <span style="color: red;">{{ error }}</span>
         {% endfor %}
         <hr />
+
+        
+
         <div>
             {{ form.submit(class="btn btn-primary") }}
         </div>
+
     </form>
-    
-    <script>
-    FilePond.registerPlugin();
-    FilePond.create(document.querySelector('.filepond'));
-    </script>
 
+<script>
+    FilePond.create(document.querySelector('input[type="file"]'),{
+        storeAsFile: true,
+        allowMultiple: true,
+    });
+</script>
 
-<!-- 画像一覧を表示する -->
-{% for user_image in user_images %}
-<div class="card col-md-7 dt-image-content">
-    <header class="d-flex justify-content-between">
-        <div class="dt-image-username">{{ user_image.User.username }}</div>
-    </header>
-    <section>
-        <img src="{{ url_for('analyze.image_file', filename=user_image.UserImage.image_path) }}" alt="アップロード画像" />
-    </section>
-</div>
-{% endfor %}
+    <!-- <script>FilePond.parse(document.body);</script> -->
+
 {% endblock %}
