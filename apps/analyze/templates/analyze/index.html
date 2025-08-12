@@ -1,3 +1,4 @@
+
 {% extends "analyze/base.html" %}
 {% block content %}
 <!-- 画像アップロード画面へのリンクを追加する -->
@@ -15,13 +16,22 @@
         {% endfor %}
         <hr />
 
-        
+        <div class="mb-5">
+            <div class="mb-1">
+                グラフの種類を選択してください
+            </div>
+
+            <p>
+                {{ form.type(class="form-select")}}
+            </p>
+        </div>
 
         <div>
             {{ form.submit(class="btn btn-primary") }}
         </div>
 
     </form>
+</div>
 
 <script>
     FilePond.create(document.querySelector('input[type="file"]'),{
