@@ -1,6 +1,7 @@
 {% extends "analyze/base.html" %}
 {% block content %}
 
-
+    {{ graph_html|safe }}
+    <p><a href="{{ url_for('analyze.index') }}">戻る</a></p>
 
 {% endblock %}

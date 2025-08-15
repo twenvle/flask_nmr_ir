@@ -15,7 +15,7 @@ class UploadTextForm(FlaskForm):
 
     type = SelectField(
         "選択してください",
-        types=[
+        choices=[
             ("", "---"),
             ("h_nmr", "1H-NMR"),
             ("c_nmr", "13C-NMR"),

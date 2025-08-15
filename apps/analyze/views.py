@@ -13,14 +13,13 @@ from flask import (
     flash,
     request,
 )
+from apps.analyze.plot import nmr
 
 al = Blueprint("analyze", __name__, template_folder="templates")
 
 
 @al.route("/", methods=["GET", "POST"])
 def index():
-    user_texts = db.session.query(UserText).all()
-
     # UploadTextFormを利用してバリデーションをする
     form = UploadTextForm()
 
@@ -36,22 +35,30 @@ def index():
 
             # テキストを保存する
             text_path = Path(current_app.config["UPLOAD_FOLDER"], text_uuid_file_name)
-            file.save(text_path) 
+            file.save(text_path)
 
             # DBに保存する
-            user_text = UserText(text_path=text_uuid_file_name, type=selected_type) # ファイル名ではなくデータベースの要素と考えた方が良い 一行分のレコード
-            db.session.add(user_text) # この段階ではまだIDは割り振られていない
-            db.session.flush() # IDを確定させる(commit or flush)
-            ids.append(user_text.id) # ファイル名よりもIDを使った方が良い
+            user_text = UserText(
+                text_path=text_uuid_file_name, type=selected_type
+            )  # ファイル名ではなくデータベースの要素と考えた方が良い 一行分のレコード
+            db.session.add(user_text)  # この段階ではまだIDは割り振られていない
+            db.session.flush()  # IDを確定させる(commit or flush)
+            ids.append(user_text.id)  # ファイル名よりもIDを使った方が良い
 
         db.session.commit()
-        return redirect(url_for("analyze.upload_file", ids=ids))
+        return redirect(
+            url_for(
+                "analyze.upload_file",
+                ids=",".join(map(str, ids)),
+                selected_type=selected_type,
+            )
+        )
+        # リダイレクトで渡せるのは HTTPリクエスト（URL）経由だけなので、変数の中身はそのまま関数間で共有できないことに注意
+        # 例: /uploads?ids=3,5,7&selected_type=h_nmr
 
     # delete_form = DeleteForm()
 
-    return render_template(
-        "analyze/index.html", user_texts=user_texts, form=form
-    )  # , delete_form=delete_form
+    return render_template("analyze/index.html", form=form)  # , delete_form=delete_form
     # getリクエスト: render_template()でフォームを表示
     # postリクエスト: 処理が終わったらredirect()で別のUPLへ
     #                このとき，render_template()だと二重送信の危険性がある
@@ -59,4 +66,14 @@ def index():
 
 @al.route("/uploads")
 def upload_file():
+    # 例えば /uploads?ids=3,5,7&selected_type=h_nmr からそれぞれの値を取得
+    ids = request.args.get("ids", "")
+    selected_type = request.args.get("selected_type", "")
 
+    ids = list(map(int, ids.split(",")))
+    user_texts = db.session.query(UserText).filter(UserText.id.in_(ids)).all()
+
+    if selected_type in ["h_nmr", "c_nmr", "f_nmr"]:
+        ratio = [1 for _ in range(len(ids))]
+        shift = [1 for _ in range(len(ids))]
+        return nmr(user_texts, selected_type, ratio, shift)
