@@ -77,3 +77,52 @@ flask db upgrade
 |Plotly.js|JS|インタラクティブなグラフ描画|https://cdn.plot.ly/plotly-latest.min.js|
 |Vue.js|JS|リアクティブなUI構築|https://cdn.jsdelivr.net/npm/vue@3/dist/vue.min.js|
 |Font Awesome|CSS|アイコンフォント|https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css|
+
+---
+# WTForms フィールド一覧（Flask-WTF）
+
+
+## 📋 テキスト入力系
+- **StringField** : 1行テキスト入力
+- **TextAreaField** : 複数行テキスト入力（メモ欄など）
+- **PasswordField** : パスワード入力（●●で隠れる）
+- **EmailField** : メールアドレス入力（HTML5 `type="email"`)
+- **URLField** : URL入力用
+- **TelField** : 電話番号入力用
+
+---
+
+## 🔢 数値入力系
+- **IntegerField** : 整数入力
+- **DecimalField** : 小数（Decimal型）
+- **FloatField** : 小数（float型）
+
+---
+
+## ✅ 選択肢系
+- **SelectField** : ドロップダウン（単一選択）
+- **SelectMultipleField** : ドロップダウン（複数選択）
+- **RadioField** : ラジオボタン（単一選択）
+- **BooleanField** : チェックボックス（ON/OFF）
+
+---
+
+## 📂 ファイル系
+- **FileField** : ファイルアップロード
+- **MultipleFileField** : 複数ファイルアップロード  
+  （Flask-WTF 独自のバリデータ `FileAllowed`, `FileRequired` と併用可能）
+
+---
+
+## 📅 日付・時間系
+- **DateField** : 日付入力（`YYYY-MM-DD`）
+- **DateTimeField** : 日付+時刻入力
+- **TimeField** : 時刻入力
+
+---
+
+## 🎛️ その他便利系
+- **HiddenField** : ユーザーに見せない隠し入力
+- **SubmitField** : 送信ボタン
+- **SearchField** : 検索ボックス用（HTML5 `type="search"`)
+- **ColorField** : 色選択（HTML5 `type="color"`）

@@ -1,7 +1,48 @@
 {% extends "analyze/base.html" %}
 {% block content %}
 
+<div class="mt-2">
     {{ graph_html|safe }}
-    <p><a href="{{ url_for('analyze.index') }}">戻る</a></p>
+</div>
+
+<hr />
+
+<form action="{{ url_for('analyze.renew') }}" method="post" novalidate="novalidate">
+    {{ setup_form.csrf_token }}
+    <div class="mt-4 mb-2">
+        縦横比
+        <div class="mt-2">
+            {{ setup_form.aspect_ratio(class="form-select")}}
+        </div>
+    </div>
+    
+    <div class="mt-4 mb-2">
+        グラフの倍率
+        <div class="d-flex gap-2">
+            {% for field in setup_form.magnification %}
+                <div class="item mr-2">
+                    {{ field(class="form-select")}}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% if ids_num > 1 %}
+        <div class="mt-4 mb-2">
+            グラフの間隔
+            <div class="d-flex gap-2">
+                {% for field in setup_form.space %}
+                    <div class="item mr-2">
+                        {{ field(class="form-select")}}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</form>
+
+<div>
+    {{ form.submit(class="btn btn-primary") }}
+</div>
 
 {% endblock %}

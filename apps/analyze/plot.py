@@ -1,11 +1,10 @@
 import pandas as pd
 import plotly.graph_objects as go
 from pathlib import Path
-from flask import current_app, render_template
-from markupsafe import Markup
+from flask import current_app
 
 
-def nmr(user_texts, selected_type, ratio, shift, height=500, width=1000):
+def nmr(user_texts, selected_type, magnification, space, height=500, width=1000):
     if selected_type == "h_nmr":
         left = 15
         right = 0
@@ -27,9 +26,9 @@ def nmr(user_texts, selected_type, ratio, shift, height=500, width=1000):
 
         maxi_y = y.max()
 
-        e_y = y * ratio[n] / maxi_y
+        e_y = y * magnification[n] / maxi_y
 
-        y = e_y + n * shift[n]
+        y = e_y + n * space[n]
 
         layout = {
             "height": height,
@@ -39,7 +38,7 @@ def nmr(user_texts, selected_type, ratio, shift, height=500, width=1000):
                 "showline": True,
                 "linecolor": "black",
                 "ticks": "inside",
-                "title": "Chemical shift [ppm]",
+                "title": "Chemical space [ppm]",
             },
             "yaxis": {"showticklabels": False},
             "plot_bgcolor": "white",
@@ -60,5 +59,4 @@ def nmr(user_texts, selected_type, ratio, shift, height=500, width=1000):
         }
     )
 
-    graph_html = fig.to_html(full_html=False)
-    return render_template("analyze/graph.html", graph_html=Markup(graph_html))
+    return fig.to_html(full_html=False)

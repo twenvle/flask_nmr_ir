@@ -2,7 +2,7 @@ import uuid
 from pathlib import Path
 from apps.app import db
 from apps.analyze.models import UserText
-from apps.analyze.forms import UploadTextForm, DeleteForm
+from apps.analyze.forms import UploadTextForm, DeleteForm, SetUp
 from flask import (
     Blueprint,
     render_template,
@@ -14,6 +14,7 @@ from flask import (
     request,
 )
 from apps.analyze.plot import nmr
+
 
 al = Blueprint("analyze", __name__, template_folder="templates")
 
@@ -66,14 +67,38 @@ def index():
 
 @al.route("/uploads")
 def upload_file():
+    setup_form = SetUp()
     # 例えば /uploads?ids=3,5,7&selected_type=h_nmr からそれぞれの値を取得
     ids = request.args.get("ids", "")
     selected_type = request.args.get("selected_type", "")
 
     ids = list(map(int, ids.split(",")))
+    ids_num = len(ids)
     user_texts = db.session.query(UserText).filter(UserText.id.in_(ids)).all()
 
+    for _ in ids:
+        setup_form.magnification.append_entry()
+        if _ == ids[-1]:
+            continue
+        setup_form.space.append_entry()
+
     if selected_type in ["h_nmr", "c_nmr", "f_nmr"]:
-        ratio = [1 for _ in range(len(ids))]
-        shift = [1 for _ in range(len(ids))]
-        return nmr(user_texts, selected_type, ratio, shift)
+        magnification = [1 for _ in range(len(ids))]
+        space = [1 for _ in range(len(ids))]
+        graph_html = nmr(user_texts, selected_type, magnification, space)
+        return render_template(
+            "analyze/graph.html",
+            setup_form=setup_form,
+            graph_html=graph_html,
+            ids=ids,
+            selected_type=selected_type,
+            ids_num=ids_num,
+        )
+
+
+@al.route("/renew", methods=["POST"])
+def renew():
+    setup_form = SetUp()
+    magnification = setup_form.magnification.data
+    space = setup_form.space.data
+    aspect_ratio = list(map(int, setup_form.aspect_ratio.data.split(",")))
