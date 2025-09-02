@@ -26,9 +26,10 @@ def nmr(user_texts, selected_type, magnification, space, height=500, width=1000)
 
         maxi_y = y.max()
 
-        e_y = y * magnification[n] / maxi_y
+        y = y * magnification[n] / maxi_y
 
-        y = e_y + n * space[n]
+        if n != 0:
+            y = y + n * space[n - 1]
 
         layout = {
             "height": height,
@@ -38,7 +39,7 @@ def nmr(user_texts, selected_type, magnification, space, height=500, width=1000)
                 "showline": True,
                 "linecolor": "black",
                 "ticks": "inside",
-                "title": "Chemical space [ppm]",
+                "title": "Chemical shift [ppm]",
             },
             "yaxis": {"showticklabels": False},
             "plot_bgcolor": "white",

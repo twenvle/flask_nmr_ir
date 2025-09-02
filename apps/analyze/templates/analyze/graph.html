@@ -5,10 +5,100 @@
     {{ graph_html|safe }}
 </div>
 
+
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#saveModal">
+    データを保存
+</button>
+
+<!-- モーダル -->
+<div>
+    <div class="modal fade" id="saveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ url_for('analyze.save_data') }}">
+                    <input type="hidden" name="ids" value="{{ ids }}">
+                    <input type="hidden" name="selected_type" value="{{ selected_type }}">
+                    <input type="hidden" name="magnification" value="{{ setup_form.magnification.data }}">
+                    <input type="hidden" name="space" value="{{ setup_form.space.data }}">
+                    <input type="hidden" name="aspect_ratio" value="{{ setup_form.aspect_ratio.data }}">
+                    {{ save_form.csrf_token }}
+                    <div class="modal-header">
+                        <h5 class="modal-title">データ保存</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="name" class="form-label">保存名</label>
+                        {{ save_form.name(class="form-control", id="name") }}
+                        <div id="nameFeedback" class="text-danger mt-1"></div>
+                    </div>
+                    <div class="modal-footer">
+                        {{ save_form.submit(class="btn btn-success", id="saveBtn") }}
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 保存ボタンを押したらこの中身が実行
+    document.getElementById("saveBtn").addEventListener("click", function (e) { 
+        // ページのリロードを防ぐ
+        e.preventDefault();
+        // モーダル内のフォームデータを取得
+        const form = document.querySelector("#saveModal form");
+        // フォームに入力されている内容をまとめて送れるデータ形式に変換
+        const formData = new FormData(form);
+    
+        // fetchはブラウザからサーバーにリクエストを送る関数
+        fetch("{{ url_for('analyze.save_data') }}", {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json()) // サーバーからのレスポンスをJSONとして受け取る
+        .then(data => {
+            if (data.valid) {
+                // 成功 → モーダル閉じてリロード
+                const modal = bootstrap.Modal.getInstance(document.getElementById("saveModal"));
+                modal.hide();
+                location.reload();
+            } else {
+                // 失敗 → モーダルを閉じずにエラーメッセージ表示
+                document.getElementById("nameFeedback").textContent = data.message;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById("nameFeedback").textContent = "保存時にエラーが発生しました。";
+        });
+    });
+
+    const saveModal = document.getElementById("saveModal");
+
+    saveModal.addEventListener("hidden.bs.modal", function () {
+        // モーダルが閉じられたらエラーメッセージを消す
+        document.getElementById("nameFeedback").textContent = "";
+    });
+</script>
+
+<!-- <div> -->
+    <!-- <form action="{{ url_for('analyze.save_data') }}" method="post" novalidate="novalidate"> -->
+        <!-- {{ save_form.csrf_token }} -->
+        <!-- <input type="hidden" name="ids" value="{{ ids }}"> -->
+        <!-- <input type="hidden" name="selected_type" value="{{ selected_type }}"> -->
+        <!-- {{ save_form.submit(class="btn btn-secondary mt-2") }} -->
+    <!-- </form> -->
+<!-- </div> -->
+
 <hr />
 
 <form action="{{ url_for('analyze.renew') }}" method="post" novalidate="novalidate">
     {{ setup_form.csrf_token }}
+
+    <input type="hidden" name="ids" value="{{ ids }}">
+    <input type="hidden" name="selected_type" value="{{ selected_type }}">
+
     <div class="mt-4 mb-2">
         縦横比
         <div class="mt-2">
@@ -39,10 +129,10 @@
             </div>
         </div>
     {% endif %}
-</form>
 
-<div>
-    {{ form.submit(class="btn btn-primary") }}
-</div>
+    <div>
+        {{ setup_form.submit(class="btn btn-primary") }}
+    </div>
+</form>
 
 {% endblock %}

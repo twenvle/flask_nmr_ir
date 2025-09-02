@@ -4,7 +4,7 @@
 <!-- 画像アップロード画面へのリンクを追加する -->
 <div>
     <form action="{{ url_for('analyze.index') }}" method="post" enctype="multipart/form-data"
-        novalidate="novalidate">
+        novalidate="novalidate" target="_blank">
         {{ form.csrf_token }}
         <div>
             {{ form.texts(class="filepond", multiple=True) }}

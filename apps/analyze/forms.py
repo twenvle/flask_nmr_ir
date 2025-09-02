@@ -1,7 +1,7 @@
 from flask_wtf.file import FileAllowed, MultipleFileField, FileRequired
 from flask_wtf.form import FlaskForm
 from wtforms.fields.simple import SubmitField
-from wtforms.fields import FieldList, SelectField, FloatField, IntegerField
+from wtforms.fields import FieldList, SelectField, FloatField, IntegerField, StringField
 
 
 class UploadTextForm(FlaskForm):
@@ -50,12 +50,12 @@ class SetUp(FlaskForm):
     aspect_ratio = SelectField(
         "縦横比",
         choices=[
-            ("9,16", "9:16"),
-            ("3,4", "3:4"),
-            ("1,1", "1:1"),
-            ("1,2", "1:2"),
+            ("500,1000", " 1:2 "),
+            ("600,1000", " 3:5 "),
+            ("750,1000", " 3:4 "),
+            ("1000,1000", " 1:1 "),
         ],
-        default="1,2",
+        default="500,1000",
     )
 
     oder = IntegerField(
@@ -64,3 +64,11 @@ class SetUp(FlaskForm):
     )
 
     submit = SubmitField("グラフを更新")
+
+
+class SeveData(FlaskForm):
+    name = StringField(
+        "データ名",
+    )
+
+    submit = SubmitField("保存する")

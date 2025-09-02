@@ -2,7 +2,7 @@ __pycache__/
 venv/
 migrations/
 /local.sqlite
-**/bootstrap.min.css
+static/
 images/
 *.zip
 /apps/past_data/
