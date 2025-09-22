@@ -1,7 +1,7 @@
 import uuid
 from pathlib import Path
 from apps.app import db
-from apps.analyze.models import UserText, GraphData
+from apps.analyze.models import UserText, GraphData, TextBatch
 from apps.analyze.forms import UploadTextForm, DeleteForm, SetUp, SeveData
 from flask import (
     Blueprint,
@@ -13,11 +13,18 @@ from flask import (
     flash,
     request,
     jsonify,
+    session,
 )
-from apps.analyze.plot import nmr
+from apps.analyze.plot import nmr, ir
 
 
 al = Blueprint("analyze", __name__, template_folder="templates")
+
+
+@al.context_processor
+def graphs_data():
+    graphs = GraphData.query.all()
+    return dict(graphs=graphs)
 
 
 @al.route("/", methods=["GET", "POST"])
@@ -47,12 +54,19 @@ def index():
             db.session.flush()  # IDを確定させる(commit or flush)
             ids.append(user_text.id)  # ファイル名よりもIDを使った方が良い
 
+        user_texts = UserText.query.filter(UserText.id.in_(ids)).all()
+        text_batch = TextBatch(files=user_texts)
+        db.session.add(text_batch)
+
         db.session.commit()
+
+        session["batch_id"] = text_batch.id
 
         magnification = [1 for _ in range(len(ids))]
         space = [1 for _ in range(len(ids) - 1)]
         height = 500
         width = 1000
+        graph_id = None
         return redirect(
             url_for(
                 "analyze.upload_file",
@@ -62,6 +76,7 @@ def index():
                 space=",".join(map(str, space)),
                 height=height,
                 width=width,
+                graph_id=graph_id,
             )
         )
         # リダイレクトで渡せるのは HTTPリクエスト（URL）経由だけなので、変数の中身はそのまま関数間で共有できないことに注意
@@ -79,6 +94,7 @@ def index():
 def upload_file():
     setup_form = SetUp()
     save_form = SeveData()
+    delete_form = DeleteForm()
     # 例えば /uploads?ids=3,5,7&selected_type=h_nmr からそれぞれの値を取得
     ids = request.args.get("ids", "")
     selected_type = request.args.get("selected_type", "")
@@ -86,6 +102,7 @@ def upload_file():
     space = request.args.get("space", "")
     height = int(request.args.get("height", 500))
     width = int(request.args.get("width", 1000))
+    graph_id = request.args.get("graph_id", None)
 
     ids = list(map(int, ids.split(",")))
     magnification = list(map(float, magnification.split(",")))
@@ -104,10 +121,6 @@ def upload_file():
 
     setup_form.aspect_ratio.data = f"{height},{width}"
 
-    print(setup_form.magnification.data)
-    print(setup_form.space.data)
-    print(type(setup_form.magnification.data))
-
     if selected_type in ["h_nmr", "c_nmr", "f_nmr"]:
         graph_html = nmr(
             user_texts=user_texts,
@@ -117,15 +130,27 @@ def upload_file():
             height=height,
             width=width,
         )
-        return render_template(
-            "analyze/graph.html",
-            setup_form=setup_form,
-            save_form=save_form,
-            graph_html=graph_html,
-            ids=",".join(map(str, ids)),
-            selected_type=selected_type,
-            ids_num=ids_num,
+
+    elif selected_type == "ir":
+        graph_html = ir(
+            user_texts=user_texts,
+            magnification=magnification,
+            space=space,
+            height=height,
+            width=width,
         )
+
+    return render_template(
+        "analyze/graph.html",
+        setup_form=setup_form,
+        save_form=save_form,
+        graph_html=graph_html,
+        ids=",".join(map(str, ids)),
+        selected_type=selected_type,
+        ids_num=ids_num,
+        graph_id=graph_id,
+        delete_form=delete_form,
+    )
 
 
 @al.route("/renew", methods=["POST"])
@@ -139,6 +164,7 @@ def renew():
     space = setup_form.space.data
     aspect_ratio = list(map(int, setup_form.aspect_ratio.data.split(",")))
     height, width = aspect_ratio
+    graph_id = None
 
     return redirect(
         url_for(
@@ -149,6 +175,7 @@ def renew():
             space=",".join(map(str, space)),
             height=height,
             width=width,
+            graph_id=graph_id,
         )
     )
 
@@ -176,14 +203,7 @@ def save_data():
     else:
         space = list(map(float, request.form.get("space", "").strip("[]").split(",")))
     aspect_ratio = list(map(int, request.form.get("aspect_ratio", "").split(",")))
-    height, width = aspect_ratio
     name = save_form.name.data
-
-    print(selected_type)
-    print(magnification)
-    print(space)
-    print(aspect_ratio)
-    print(name)
 
     settings = {
         "selected_type": selected_type,
@@ -194,11 +214,31 @@ def save_data():
 
     ids = request.form.get("ids", "")
     ids = list(map(int, ids.split(",")))
-    user_text = UserText.query.filter(UserText.id.in_(ids)).all()
 
-    graph_data = GraphData(name=name, settings=settings, files=user_text)
+    batch_id = session.get("batch_id")
+    text_batch = TextBatch.query.get(batch_id)
+
+    graph_data = GraphData(name=name, settings=settings, batch_id=text_batch.id)
     db.session.add(graph_data)
     db.session.commit()
+
+    return jsonify({"valid": True, "message": "保存しました"})
+
+
+@al.route("/redrow/<int:graph_id>")
+def redrow(graph_id):
+    graph_data = GraphData.query.get_or_404(graph_id)
+    settings = graph_data.settings
+    text_batch = TextBatch.query.get(graph_data.batch_id)
+    user_texts = text_batch.files
+
+    session["batch_id"] = text_batch.id
+
+    ids = [user_text.id for user_text in user_texts]
+    selected_type = settings["selected_type"]
+    magnification = settings["magnification"]
+    space = settings["space"]
+    height, width = settings["aspect_ratio"]
 
     return redirect(
         url_for(
@@ -209,5 +249,49 @@ def save_data():
             space=",".join(map(str, space)),
             height=height,
             width=width,
+            graph_id=graph_id,
+        )
+    )
+
+
+@al.route("/delete/<int:graph_id>", methods=["POST"])
+def delete_data(graph_id):
+    form = DeleteForm()
+    graph_data = GraphData.query.get_or_404(graph_id)
+    settings = graph_data.settings
+    text_batch = TextBatch.query.get(graph_data.batch_id)
+    user_texts = text_batch.files
+
+    session["batch_id"] = text_batch.id
+
+    ids = [user_text.id for user_text in user_texts]
+    selected_type = settings["selected_type"]
+    magnification = settings["magnification"]
+    space = settings["space"]
+    height, width = settings["aspect_ratio"]
+
+    if form.validate_on_submit():
+        graph_data = GraphData.query.get_or_404(graph_id)
+        try:
+            db.session.delete(graph_data)
+            db.session.commit()
+            flash("グラフデータを削除しました。")
+        except Exception as e:
+            flash("グラフデータの削除に失敗しました。")
+            current_app.logger.error(e)
+            db.session.rollback()
+    else:
+        flash("不正なリクエストです。")
+
+    return redirect(
+        url_for(
+            "analyze.upload_file",
+            ids=",".join(map(str, ids)),
+            selected_type=selected_type,
+            magnification=",".join(map(str, magnification)),
+            space=",".join(map(str, space)),
+            height=height,
+            width=width,
+            graph_id=None,
         )
     )

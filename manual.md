@@ -126,3 +126,14 @@ flask db upgrade
 - **SubmitField** : 送信ボタン
 - **SearchField** : 検索ボックス用（HTML5 `type="search"`)
 - **ColorField** : 色選択（HTML5 `type="color"`）
+
+
+---
+## sqliteの操作について
+
+・ターミナルでsqlite3 local.sqliteと入力
+
+・データを消す場合
+```
+delete from テーブル名;
+```

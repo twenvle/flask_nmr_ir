@@ -21,4 +21,7 @@ btn btn-primary | ボタンの基本設定|
 ```
 m=margin, p=padding, t=top, b=bottom, l=left, r=right, x=左右, y=上下
 
+---
+CSS → <style> ... </style> タグの中に書く
 
+JS → <script> ... </script> タグの中に書く

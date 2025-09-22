@@ -74,3 +74,40 @@ input[type="search"] {
 .dt-image-submit {
     margin-left: 10px;
 }
+
+/* myself */
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown > button {
+    background: none;          /* 背景を消す */
+    border: none;              /* 枠線を消す */
+    color: inherit;            /* ナビバーの文字色を引き継ぐ */
+    font: inherit;             /* フォントも親要素に合わせる */
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    display: block;   /* 1行ずつ縦に並ぶ */
+    padding: 4px 6px;
+    text-decoration: none;
+}
+
+.dropdown-content a:hover {
+    background-color: #dcdcdc; /* hover 時の色 */
+}

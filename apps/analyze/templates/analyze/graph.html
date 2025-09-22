@@ -1,14 +1,24 @@
 {% extends "analyze/base.html" %}
 {% block content %}
 
-<div class="mt-2">
+<div class="d-flex justify-content-center mt-2">
     {{ graph_html|safe }}
 </div>
 
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#saveModal">
+        データを保存
+    </button>
+    
+    {% if graph_id %}
+    
+            <form action="{{ url_for('analyze.delete_data', graph_id=graph_id) }}" method="POST">
+                {{ delete_form.csrf_token }}
+                {{ delete_form.submit(class="btn btn-danger btn-sm") }}
+            </form>
+    {% endif %}
+</div>
 
-<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#saveModal">
-    データを保存
-</button>
 
 <!-- モーダル -->
 <div>
@@ -79,6 +89,8 @@
     saveModal.addEventListener("hidden.bs.modal", function () {
         // モーダルが閉じられたらエラーメッセージを消す
         document.getElementById("nameFeedback").textContent = "";
+        // 入力欄もリセットしたいならこれも
+        document.getElementById("name").value = "";
     });
 </script>
 
@@ -102,7 +114,7 @@
     <div class="mt-4 mb-2">
         縦横比
         <div class="mt-2">
-            {{ setup_form.aspect_ratio(class="form-select")}}
+            {{ setup_form.aspect_ratio(class="form-select") }}
         </div>
     </div>
     

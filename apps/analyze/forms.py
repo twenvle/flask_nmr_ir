@@ -29,7 +29,7 @@ class UploadTextForm(FlaskForm):
 
 
 class DeleteForm(FlaskForm):
-    submit = SubmitField("削除")
+    submit = SubmitField("データを削除")
 
 
 class SetUp(FlaskForm):
@@ -51,9 +51,9 @@ class SetUp(FlaskForm):
         "縦横比",
         choices=[
             ("500,1000", " 1:2 "),
-            ("600,1000", " 3:5 "),
-            ("750,1000", " 3:4 "),
-            ("1000,1000", " 1:1 "),
+            ("563,937", " 3:5 "),
+            ("643,857", " 3:4 "),
+            ("750,750", " 1:1 "),
         ],
         default="500,1000",
     )
