@@ -8,6 +8,7 @@
 
 ```
 python -m venv venv　 (最後のvenvはファイル名)
+例:py -3.12 -m venv venv312 (python 3.12を使う場合)
 ```
 4. 仮想環境を有効化する
 ```
@@ -136,4 +137,11 @@ flask db upgrade
 ・データを消す場合
 ```
 delete from テーブル名;
+```
+
+---
+## requirements.txtの作り方
+ターミナルで
+```
+pip freeze > requirements.txt
 ```
