@@ -6,7 +6,7 @@ from apps.config import config
 db = SQLAlchemy()
 
 
-def create_app(config_key="default"):
+def create_app(config_key):
     app = Flask(__name__)
 
     app.config.from_object(config[config_key])
@@ -25,7 +25,7 @@ def create_app(config_key="default"):
     return app
 
 
-app = create_app()
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+# app = create_app(config_key="development")
+#
+# if __name__ == "__main__":
+# app.run(host="0.0.0.0", port=5000, debug=True)
